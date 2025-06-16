@@ -1,0 +1,69 @@
+#include <SoftwareSerial.h>
+
+SoftwareSerial mySerial(2, 3); 
+
+// LED Pins
+const int redLED = 8;
+const int greenLED = 9;
+const int blueLED = 10;
+
+#define CMD_RED    0
+#define CMD_GREEN  1
+#define CMD_BLUE   2
+#define CMD_OFF    3
+
+uint8_t records[7]; 
+uint8_t buf[64];
+
+void setup() {
+  Serial.begin(9600);
+  mySerial.begin(9600);
+
+  pinMode(redLED, OUTPUT);
+  pinMode(greenLED, OUTPUT);
+  pinMode(blueLED, OUTPUT);
+
+  Serial.println("Voice Control LED Ready");
+}
+
+void loop() {
+  if (mySerial.available()) {
+    int len = mySerial.readBytesUntil('\n', buf, sizeof(buf));
+    if (buf[0] == 0xAA) {
+      uint8_t cmd = buf[1];
+      handleCommand(cmd);
+    }
+  }
+}
+
+void handleCommand(uint8_t cmd) {
+  switch (cmd) {
+    case CMD_RED:
+      digitalWrite(redLED, HIGH);
+      digitalWrite(greenLED, LOW);
+      digitalWrite(blueLED, LOW);
+      Serial.println("RED ON");
+      break;
+    case CMD_GREEN:
+      digitalWrite(redLED, LOW);
+      digitalWrite(greenLED, HIGH);
+      digitalWrite(blueLED, LOW);
+      Serial.println("GREEN ON");
+      break;
+    case CMD_BLUE:
+      digitalWrite(redLED, LOW);
+      digitalWrite(greenLED, LOW);
+      digitalWrite(blueLED, HIGH);
+      Serial.println("BLUE ON");
+      break;
+    case CMD_OFF:
+      digitalWrite(redLED, LOW);
+      digitalWrite(greenLED, LOW);
+      digitalWrite(blueLED, LOW);
+      Serial.println("All OFF");
+      break;
+    default:
+      Serial.println("Unknown command");
+      break;
+  }
+}
